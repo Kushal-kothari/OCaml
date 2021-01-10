@@ -1,40 +1,39 @@
-(* 02/05/2015 *)
+(* 06/02/2020 *)
 
-#use "day_3.ml";;
+#use "day_4.ml"
 (************************************************************************************)
-(* 10. Run-length encoding of a list. (easy) *)
+(* 12. Decode a run-length encoded list. (medium) *)
 (************************************************************************************)
 
-let encode_1 l = let list = pack l in
-	       let count = List.map length list in
-	       List.map2 (fun a b -> (a,b)) count (compress_sol l)
-		 
+let rec repeat item = function
+  | 0 -> []
+  | larger -> item :: (repeat item (larger -1))
+
+let rec decode = function
+  |[] -> []
+  |h::t -> (begin match h with
+      |One x -> x::(decode t)
+      |Many (n, x) -> (repeat x n)@(decode t) end)
+    
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-let encode_1_sol list =
-	let rec aux count acc = function
-	  | [] -> [] (* Can only be reached if original list is empty *)
-	  | [x] -> (count+1, x) :: acc
-	  | a :: (b :: _ as t) -> if a = b then aux (count + 1) acc t
-	                          else aux 0 ((count+1,a) :: acc) t in
-	List.rev (aux 0 [] list);;
-(* val encode : 'a list -> (int * 'a) list = <fun> *)
-
-(* An alternative solution, which is shorter but requires 
-	more memory, is to use the pack function declared above: *)
-
-let encode_1_sol_1 list =
-    List.map (fun l -> (List.length l, List.hd l)) (pack_sol list);;
-(* val encode : 'a list -> (int * 'a) list = <fun> *)
+let decode_sol list =
+    let rec many acc n x =
+      if n = 0 then acc else many (x :: acc) (n-1) x in
+    let rec aux acc = function
+      | [] -> acc
+      | One x :: t -> aux (x :: acc) t
+      | Many (n,x) :: t -> aux (many acc n x) t  in
+    aux [] (List.rev list);;
+(* val decode : 'a rle list -> 'a list = <fun> *)
 
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* 1. High order function !!!!! *)
-(* 2. You were right about the counter *)
+(* 1. Try tail recursion*)
 
 (*==================================================================================*)
 (* REVISION *)
@@ -42,51 +41,49 @@ let encode_1_sol_1 list =
 
 (* NONE *)
 
-		
+    
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 
 (************************************************************************************)
-(* 11. Modified run-length encoding. (easy) *)
+(* 13. Run-length encoding of a list (direct solution). (medium) *)
 (************************************************************************************)
 
-type 'a rle =
-  | One of 'a
-  | Many of (int * 'a)
-(* type 'a rle = One of 'a | Many of int * 'a *)
-		
-let select = function
-  | (1, x) ->  One x
-  | (_ ,x) as t -> Many t
 
-let encode_2 l = List.map select (encode_1 l)
+let encode_3 list = 
+  let update count x = if count = 0 then One x else Many (count+1, x) in
+  let rec help counter acc = function 
+    | [] -> []
+    | [h] -> acc@ [update (counter+1) h]
+    | h1::(h2 ::_ as t) -> if h1 = h2 then help (counter+1) acc t 
+                          else help 0 ( acc @ [update (counter+1) h1]) t in 
+    (help 0 [] liast)
+
+
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-let encode_2_sol l =
-  let create_tuple cnt elem =
-    if cnt = 1 then One elem
-    else Many (cnt, elem) in
-  let rec aux count acc = function
-    | [] -> []
-    | [x] -> (create_tuple (count+1) x) :: acc
-    | hd :: (snd :: _ as tl) ->
-        if hd = snd then aux (count + 1) acc tl
-        else aux 0 ((create_tuple (count + 1) hd) :: acc) tl in
-    List.rev (aux 0 [] l);;
+let encode_3_sol list =
+    let rle count x = if count = 0 then One x else Many (count + 1, x) in
+    let rec aux count acc = function
+      | [] -> [] (* Can only be reached if original list is empty *)
+      | [x] -> rle count x :: acc
+      | a :: (b :: _ as t) 9if a = b then aux (count + 1) acc t
+                              else aux 0 (rle count a :: acc) t  in
+    List.rev (aux 0 [] list);;
 (* val encode : 'a list -> 'a rle list = <fun> *)
 
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* 1. High order function is short but need more spaces *)
-(* 2. Try to write a recursive function *)
+(* notes *)
 
 (*==================================================================================*)
 (* REVISION *)
 (*==================================================================================*)
 
 (* NONE *)
+

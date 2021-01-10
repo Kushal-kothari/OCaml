@@ -1,85 +1,85 @@
-(* 02/13/2015 *)
+(* 09/03/2020 *)
 
-#use "day_9.ml"
+#use "day_14.ml"
 
 (************************************************************************************)
-(* 22. Extract a given number of randomly selected elements from a list. (medium) *)
+(* 37. Goldbach's conjecture. (medium) *)
 (************************************************************************************)
-exception NotFound
-  
-let rec rand_select ln n = 
-  let rec get_nth x = function
-    |[] -> raise NotFound
-    | h::d -> if x = 0 then h else get_nth (x-1) d
-  in 
-  let rec random y l = 
-    if y = 0 then [] else (Random.int (List.length l))::(random (y-1) l)
-  in
-  let rec aux acc l = function
-    | [] -> acc
-    | h::d -> aux (acc @ [get_nth h l]) l d
-  in aux [] ln (random n ln) 
+
+let goldbach n = 
+  let rec aux acc x = 
+    if (n-acc = x) && is_prime x then (acc, x) 
+    else aux (acc+1) (x-1)
+  in aux 2 (n-2)
+
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-let rec rand_select_sol list n =
-  let rec extract acc n = function
-    | [] -> raise Not_found
-    | h :: t -> if n = 0 then (h, acc @ t) else extract (h::acc) (n-1) t
-  in
-  let extract_rand list len =
-    extract [] (Random.int len) list
-  in
-  let rec aux n acc list len =
-    if n = 0 then acc else
-      let picked, rest = extract_rand list len in
-      aux (n-1) (picked :: acc) rest (len-1)
-  in
-  let len = List.length list in
-  aux (min n len) [] list len
-(* val rand_select : 'a list -> int -> 'a list = <fun> *)
+(* [is_prime] is defined in the previous solution *)
+  let goldbach_sol n =
+    let rec aux d =
+      if is_prime d && is_prime (n - d) then (d, n-d)
+      else aux (d+1) in
+    aux 2
+(* val goldbach : int -> int * int = <fun> *)
 
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* Study the solution, not using pattern matching as many as you did *)
+(* aux does not need to have second argument, think through before you code *)
 
 (*==================================================================================*)
 (* REVISION *)
 (*==================================================================================*)
 
 (* NONE *)
-
     
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 
 (************************************************************************************)
-(* 23. Lotto: Draw N different random numbers from the set 1..M. (easy) *)
+(* 38. A list of Goldbach compositions. (medium) *)
 (************************************************************************************)
 
-let rec lotto_select n m =
-  rand_select (range 1 m) n
+let goldbach_list a b = 
+  let rec aux acc d = 
+    if d<=b then
+      if (d mod 2=0) then aux ((d, goldbach d)::acc) (d+1)
+      else aux acc (d+1)
+    else acc
+  in List.rev (aux [] a)
+
+let goldbach_limit a b c =
+  List.filter (fun ( _,(x, y)) ->  x>c && y>c ) (goldbach_list a b)
+  
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-(* [range] and [rand_select] defined in problems above *)
-  let lotto_select_sol n m = rand_select (range 1 m) n
-(* val lotto_select : int -> int -> int list = <fun> *)
-
+(* [goldbach] is defined in the previous question. *)
+  let rec goldbach_list_sol a b =
+    if a > b then [] else
+      if a mod 2 = 1 then goldbach_list (a+1) b
+      else (a, goldbach a) :: goldbach_list (a+2) b
+  
+  let goldbach_limit_sol a b lim =
+    List.filter (fun (_,(a,b)) -> a > lim && b > lim) (goldbach_list a b);;
+(* val goldbach_list : int -> int -> (int * (int * int)) list = <fun> *)
+(* val goldbach_limit : int -> int -> int -> (int * (int * int)) list = <fun> *)
+  
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* Good Job *)
+(* Think about exceptions and use of different high order functions *)
 
 (*==================================================================================*)
 (* REVISION *)
 (*==================================================================================*)
 
 (* NONE *)
+

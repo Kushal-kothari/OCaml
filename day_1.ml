@@ -1,76 +1,77 @@
-(* 07/02/2015 *)
-
-#use "day_5.ml"
+(* 02/02/2020 *)
 
 (************************************************************************************)
-(* 14. Duplicate the elements of a list. (easy) *)
+(* 1. Write a function last : 'a list -> 'a option that returns the 
+	last element of a list. (easy) *)
 (************************************************************************************)
 
-let rec duplicate = function
+exception EmptyList
 
-  | [] -> []
-	| h::t -> [h;h]@(duplicate t)
+let rec last l = match l with
+	| [] -> raise EmptyList 
+	| [x] -> x
+	| h::t -> last t
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-let rec duplicate_sol = function
-		| [] -> []
-		| h :: t -> h :: h :: duplicate t;;
-(* val duplicate : 'a list -> 'a list = <fun> *)
+let rec last_sol = function
+	| [] -> None
+	| [x] -> Some x
+	| _ :: t -> last_sol t 
 
 (*==================================================================================*)
-(* NOTES *)
+(* Notes *)
 (*==================================================================================*)
 
-(* Good job! *)
+(* be aware of returned type, function does same thing but type is wrong *)
+(* Key point: Option type: Options are widely used in Ocaml to represent undefined values 
+	(a little like NULL in C, but in a type and memory safe way). *)
+
+(*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
+(*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 
 (*==================================================================================*)
 (* REVISION *)
 (*==================================================================================*)
 
 (* NONE *)
-		
-(*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
-(*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 
 (************************************************************************************)
-(* 15. Replicate the elements of a list a given number of times. (medium) *)
+(* 2. Find the last but one (last and penultimate) elements of a list. (easy) *)
 (************************************************************************************)
-let rec copy element = function
-  | 0 -> []
-  | larger -> element :: (copy element (larger-1))
-
-let rec replicate l n = match l, n with  
-  | [], _ ->  []
-  | _ , 0 -> l
-  | h::t, _ -> (copy h n)@(replicate t n)
+let rec last_two l = match l with
+	| [] -> None
+	| [x] -> None
+	| [x;y] -> Some (x, y)
+	| _::t -> last_two t
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-let replicate_sol list n =
-    let rec prepend n acc x =
-      if n = 0 then acc else prepend (n-1) (x :: acc) x in
-    let rec aux acc = function
-      | [] -> acc
-      | h :: t -> aux (prepend n acc h) t  in
-    (* This could also be written as:
-       List.fold_left (prepend n) [] (List.rev list) *)
-    aux [] (List.rev list);;
-(* val replicate : 'a list -> int -> 'a list = <fun> *)
+let rec last_two_sol = function
+	| [] | [_] -> None
+	| [x;y] -> Some (x,y)
+	| _::t -> last_two_sol t
+(* val last_two : 'a list -> ('a * 'a) option = <fun> *)
 
 (*==================================================================================*)
-(* NOTES *)
+(* Notes *)
 (*==================================================================================*)
 
-(* 1. Same idea as solution but soultion is using tail-recurison *)
-(* 2. You should really practice tail recurison *)
+(* Simplify your function, Ockham's Razor! *)
 
 (*==================================================================================*)
 (* REVISION *)
 (*==================================================================================*)
 
 (* NONE *)
+
+
+
+
+
+
+

@@ -1,125 +1,121 @@
+(* 04/02/2020 *)
 
-(* 23/02/2015 *)
-
-#use "day_12.ml"
-
+#use "day_2.ml";;
 (************************************************************************************)
-(* 31. Calculate Euler's totient function φ(m). (medium) *)
+(* 7. Flatten a nested list structure. (medium) *)
 (************************************************************************************)
 
-let phi n = 
-  let rec aux acc x =
-    if x = n then acc
-  else (if (coprime n x) then aux (acc+1) (x+1) else aux acc (x+1))
-in aux 0 1
+(* There is no nested list type in OCaml, so we need to define one first. 
+  A node of a nested list is either an element, or a list of nodes. *)
+type 'a node =
+  | One of 'a 
+  | Many of 'a node list
+(* type 'a node = One of 'a | Many of 'a node list *)
+
+let rec flatten = function
+  | [] -> []
+  | (One x)::tl -> x::(flatten tl)
+  | (Many x)::tl -> (flatten x)@(flatten tl)
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-(* [coprime] is defined in the previous question *)
-let phi_sol n =
-  let rec count_coprime acc d =
-    if d < n then
-      count_coprime (if coprime n d then acc + 1 else acc) (d )+ 1
-    else acc
-  in
-  if n = 1 then 1 else count_coprime 0 1
-(* val phi : int -> int = <fun> *)
+(* This function traverses the list, prepending any encountered elements
+    to an accumulator, which flattens the list in inverse order. It can
+    then be reversed to obtain the actual flattened list. *)
+  
+let flatten_sol list =
+  let rec aux acc = function
+		| [] -> acc
+		| One x :: t -> aux (x :: acc) t
+		| Many l :: t -> aux (aux acc l) t in
+List.rev (aux [] list)
+
+(* val flatten : 'a node list -> 'a list = <fun> *)
+
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* Ignored case phi 1 = 1 at first time, learn from 'count_prime' *)
+(* Again, tail recursion, but I think my solution is simpler *)
 
 (*==================================================================================*)
 (* REVISION *)
 (*==================================================================================*)
 
-let phi n = 
-  let rec aux acc x =
-    if x = n then acc
-  else (if (coprime n x) then aux (acc+1) (x+1) else aux acc (x+1))
-in 
-if n = 1 then 1 else aux 0 1   
-    
+let flatten_rev l =
+  let rec help acc = function
+     | [] -> acc
+     | One x :: t -> help (acc @ [x]) t
+     | Many x :: t -> help (help acc x ) t
+  in help [] l
+		
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 
 (************************************************************************************)
-(* 32. Determine the prime factors of a given positive integer. (medium) *)
+(* 8. Eliminate consecutive duplicates of list elements. (medium) *)
 (************************************************************************************)
 
-let factors n = 
-  let rec aux x y =
-    if y = 1 then []
-    else
-      (if is_prime x && (y mod x = 0) then x::(aux x (y/x))
-      else aux (x+1) y)
-  in aux 1 n
+let rec compress = function
+  | [] -> [] 
+  | [x]-> [x]
+  | h1::h2::t -> if h1 = h2 then compress (h1::t) else h1::(compress (h2::t))
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-(* Recall that d divides n iff [n mod d = 0] *)
-  let factors_sol n =
-    let rec aux d n =
-      if n = 1 then [] else
-        if n mod d = 0 then d :: aux d (n / d) else aux (d+1) n
-    in
-    aux 2 n;;
-(* val factors : int -> int list = <fun> *)
+let rec compress_sol = function
+    | a :: (b :: _ as t) -> if a = b then compress_sol t else a :: compress_sol t
+    | smaller -> smaller
+    (* val compress : 'a list -> 'a list = <fun> *)
 
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* Same idea as solution, solution satrts at 2 becasue it does not have the condition
-to check if 1 is prime or not; otehrwise it will loop forever *)
+(* 1. Use keywords such as "as" to make your function more elegant and efficient *)
+(* 2. Again, coding style is VERY IMPORTANT, a good programmer code cleanly and elegantly *)
+(* 3. Question with "smaller" *)
 
 (*==================================================================================*)
 (* REVISION *)
 (*==================================================================================*)
 
 (* NONE *)
-    
+		
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 
 (************************************************************************************)
-(* 33. Determine the prime factors of a given positive integer (2). (medium) *)
+(* 9. Pack consecutive duplicates of list elements into sublists. (medium) *)
 (************************************************************************************)
 
-let factors_2 n = 
-  let rec reduce acc counter = function
-    | [] -> []
-    | [x] -> acc @ [(x, counter+1)]
-    | h1::(h2::_ as t) -> if h1 = h2 then reduce acc (counter+1) t
-                          else reduce (acc @ [(h1, counter+1)]) 0 t
-  in reduce [] 0 (factors n)
+let rec pack = function
+	| a :: (b :: _ as t ) -> if a <> b then [a]::pack t else [a; b] :: pack t
+	| smaller -> [smaller]
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-let factors_2_sol n =
-  let rec aux d n =
-    if n = 1 then [] else
-      if n mod d = 0 then
-        match aux d (n / d) with
-        | (h,n) :: t when h = d -> (h,n+1) :: t
-        | l -> (d,1) :: l
-      else aux (d+1) n
-  in
-  aux 2 n;;
-(* val factors : int -> (int * int) list = <fun> *)
+let pack_sol list =
+    let rec aux current acc = function
+      | [] -> []    (* Can only be reached if original list is empty *)
+      | [x] -> (x :: current) :: acc
+      | a :: (b :: _ as t) ->
+         if a = b then aux (a :: current) acc t
+         else aux [] ((a :: current) :: acc) t  in
+    List.rev (aux [] [] list)
+(* val pack : 'a list -> 'a list list = <fun> *)
 
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* Study the solution *)
+(* notes *)
 
 (*==================================================================================*)
 (* REVISION *)
@@ -127,4 +123,5 @@ let factors_2_sol n =
 
 (* NONE *)
 
-    
+
+

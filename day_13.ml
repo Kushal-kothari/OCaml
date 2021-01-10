@@ -1,42 +1,82 @@
-(* 24/02/2015 *)
-#load "unix.cma";;
-#use "day_13.ml"
-open Unix;;
 
+(* 23/02/2020 *)
+
+#use "day_12.ml"
 
 (************************************************************************************)
-(* 34. Calculate Euler's totient function φ(m) (improved). (medium) *)
+(* 31. Calculate Euler's totient function φ(m). (medium) *)
 (************************************************************************************)
 
-let phi_improved n = 
-  let rec pow a p  = 
-    if p < 1 then 1 else pow (a*a) (p-1)
+let phi n = 
+  let rec aux acc x =
+    if x = n then acc
+  else (if (coprime n x) then aux (acc+1) (x+1) else aux acc (x+1))
+in aux 0 1
+
+(*==================================================================================*)
+(* SOLUTION *)
+(*==================================================================================*)
+
+(* [coprime] is defined in the previous question *)
+let phi_sol n =
+  let rec count_coprime acc d =
+    if d < n then
+      count_coprime (if coprime n d then acc + 1 else acc) (d )+ 1
+    else acc
   in
-  let rec multiply acc = function
-   | [] -> acc
-   | (a,b)::d -> multiply (acc*(a-1)*(pow a (b-1))) d
- in multiply 1 (factors_2 n)
+  if n = 1 then 1 else count_coprime 0 1
+(* val phi : int -> int = <fun> *)
+(*==================================================================================*)
+(* NOTES *)
+(*==================================================================================*)
+
+(* Ignored case phi 1 = 1 at first time, learn from 'count_prime' *)
+
+(*==================================================================================*)
+(* REVISION *)
+(*==================================================================================*)
+
+let phi n = 
+  let rec aux acc x =
+    if x = n then acc
+  else (if (coprime n x) then aux (acc+1) (x+1) else aux acc (x+1))
+in 
+if n = 1 then 1 else aux 0 1   
+    
+(*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
+(*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
+
+(************************************************************************************)
+(* 32. Determine the prime factors of a given positive integer. (medium) *)
+(************************************************************************************)
+
+let factors n = 
+  let rec aux x y =
+    if y = 1 then []
+    else
+      (if is_prime x && (y mod x = 0) then x::(aux x (y/x))
+      else aux (x+1) y)
+  in aux 1 n
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-(* Naive power function. *)
-let rec pow n p = if p < 1 then 1 else n * pow n (p-1);;
-(* val pow : int -> int -> int = <fun> *)
-(* [factors] is defined in the previous question. *)
-let phi_improved_sol n =
-  let rec aux acc = function
-    | [] -> acc
-    | (p,m) :: t -> aux ((p - 1) * (pow p (m - 1)) * acc) t in
-  aux 1 (factors_2_sol n)
-(* val phi_improved : int -> int = <fun> *)
+(* Recall that d divides n iff [n mod d = 0] *)
+  let factors_sol n =
+    let rec aux d n =
+      if n = 1 then [] else
+        if n mod d = 0 then d :: aux d (n / d) else aux (d+1) n
+    in
+    aux 2 n;;
+(* val factors : int -> int list = <fun> *)
 
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* Some logic errors at begining *)
+(* Same idea as solution, solution satrts at 2 becasue it does not have the condition
+to check if 1 is prime or not; otehrwise it will loop forever *)
 
 (*==================================================================================*)
 (* REVISION *)
@@ -48,76 +88,38 @@ let phi_improved_sol n =
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 
 (************************************************************************************)
-(* 35. Compare the two methods of calculating Euler's totient function. (easy) *)
+(* 33. Determine the prime factors of a given positive integer (2). (medium) *)
 (************************************************************************************)
 
-let timeit f a =
-  let t = Sys.time() in
-  ignore(f a);
-  let t1 = Sys.time() in
-  t1 -. t
-    
-(*==================================================================================*)
-(* SOLUTION *)
-(*==================================================================================*)
-
-(* Naive [timeit] function.  It requires the [Unix] module to be loaded. *)
-  let timeit_sol f a =
-    let t0 = Unix.gettimeofday() in
-    ignore(f a);
-    let t1 = Unix.gettimeofday() in
-    t1 -. t0;;
-(* val timeit : ('a -> 'b) -> 'a -> float = <fun> *)
-
-(*==================================================================================*)
-(* NOTES *)
-(*==================================================================================*)
-
-(* Import module; use different built-in functions *)
-
-(*==================================================================================*)
-(* REVISION *)
-(*==================================================================================*)
-
-(* NONE *)
-    
-(*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
-(*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
-
-(************************************************************************************)
-(* 36. A list of prime numbers. (easy) *)
-(************************************************************************************)
-
-let all_primes a b = 
-  let rec aux acc x y = 
-    if x = y then acc
-  else
-      if is_prime_sol x then aux (acc@[x]) (x+1) y
-    else aux acc (x+1) y
-  in aux [] a b
+let factors_2 n = 
+  let rec reduce acc counter = function
+    | [] -> []
+    | [x] -> acc @ [(x, counter+1)]
+    | h1::(h2::_ as t) -> if h1 = h2 then reduce acc (counter+1) t
+                          else reduce (acc @ [(h1, counter+1)]) 0 t
+  in reduce [] 0 (factors n)
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-let is_prime n =
-    let n = max n (-n) in
-    let rec is_not_divisor d =
-      d * d > n || (n mod d <> 0 && is_not_divisor (d+1)) in
-    is_not_divisor 2
-  
-let rec all_primes_sol a b =
-  if a > b then [] else
-    let rest = all_primes (a + 1) b in
-    if is_prime a then a :: rest else rest;;
+let factors_2_sol n =
+  let rec aux d n =
+    if n = 1 then [] else
+      if n mod d = 0 then
+        match aux d (n / d) with
+        | (h,n) :: t when h = d -> (h,n+1) :: t
+        | l -> (d,1) :: l
+      else aux (d+1) n
+  in
+  aux 2 n;;
+(* val factors : int -> (int * int) list = <fun> *)
 
-(* val is_prime : int -> bool = <fun> *)
-(* val all_primes : int -> int -> int list = <fun> *)
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* No need for tail-recursion *)
+(* Study the solution *)
 
 (*==================================================================================*)
 (* REVISION *)
@@ -125,3 +127,4 @@ let rec all_primes_sol a b =
 
 (* NONE *)
 
+    

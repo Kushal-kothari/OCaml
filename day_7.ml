@@ -1,35 +1,39 @@
-(* 09/03/2015 *)
+(* 08/02/2020 *)
 
-#use "day_14.ml"
+#use "day_6.ml"
 
 (************************************************************************************)
-(* 37. Goldbach's conjecture. (medium) *)
+(* 16. Drop every N'th element from a list. (medium) *)
 (************************************************************************************)
 
-let goldbach n = 
-  let rec aux acc x = 
-    if (n-acc = x) && is_prime x then (acc, x) 
-    else aux (acc+1) (x-1)
-  in aux 2 (n-2)
+(* let rec delete n l = match n, l with 
+  | _, [] -> []
+  | 1, h::t -> t
+  | _, h::t -> h:: (delete (n-1) t) in
+ *)  
 
+let rec drop list n  = 
+  let rec aux counter = function 
+    |[] -> []
+    |h::t -> if counter = n then (aux 1 t) else h::(aux (counter+1) t) in
+  aux 1 list
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-(* [is_prime] is defined in the previous solution *)
-  let goldbach_sol n =
-    let rec aux d =
-      if is_prime d && is_prime (n - d) then (d, n-d)
-      else aux (d+1) in
-    aux 2
-(* val goldbach : int -> int * int = <fun> *)
+let drop_sol list n =
+    let rec aux i = function
+      | [] -> []
+      | h :: t -> if i = n then aux 1 t else h :: aux (i+1) t  in
+    aux 1 list;;
+(* val drop : 'a list -> int -> 'a list = <fun> *)
 
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* aux does not need to have second argument, think through before you code *)
+(* Redo it by yourself *)
 
 (*==================================================================================*)
 (* REVISION *)
@@ -41,41 +45,32 @@ let goldbach n =
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 
 (************************************************************************************)
-(* 38. A list of Goldbach compositions. (medium) *)
+(* 17. Split a list into two parts; the length of the first part is given. (easy) *)
 (************************************************************************************)
 
-let goldbach_list a b = 
-  let rec aux acc d = 
-    if d<=b then
-      if (d mod 2=0) then aux ((d, goldbach d)::acc) (d+1)
-      else aux acc (d+1)
-    else acc
-  in List.rev (aux [] a)
-
-let goldbach_limit a b c =
-  List.filter (fun ( _,(x, y)) ->  x>c && y>c ) (goldbach_list a b)
-  
+let rec split list n = 
+  let rec aux acc i = function 
+    | [] -> (acc, [])
+    | h::t  -> if i = n then (acc,t) else aux (acc@[h]) (i+1) t
+  in aux [] 0 list
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-(* [goldbach] is defined in the previous question. *)
-  let rec goldbach_list_sol a b =
-    if a > b then [] else
-      if a mod 2 = 1 then goldbach_list (a+1) b
-      else (a, goldbach a) :: goldbach_list (a+2) b
-  
-  let goldbach_limit_sol a b lim =
-    List.filter (fun (_,(a,b)) -> a > lim && b > lim) (goldbach_list a b);;
-(* val goldbach_list : int -> int -> (int * (int * int)) list = <fun> *)
-(* val goldbach_limit : int -> int -> int -> (int * (int * int)) list = <fun> *)
-  
+let split_sol list n =
+    let rec aux i acc = function
+      | [] -> List.rev acc, []
+      | h :: t as l -> if i = 0 then List.rev acc, l
+                       else aux (i-1) (h :: acc) t  in
+    aux n [] list;;
+(* val split : 'a list -> int -> 'a list * 'a list = <fun> *)
+
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* Think about exceptions and use of different high order functions *)
+(* Good Job! *)
 
 (*==================================================================================*)
 (* REVISION *)

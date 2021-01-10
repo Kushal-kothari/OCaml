@@ -1,80 +1,76 @@
-(* 08/02/2015 *)
+(* 07/02/2020 *)
 
-#use "day_6.ml"
+#use "day_5.ml"
 
 (************************************************************************************)
-(* 16. Drop every N'th element from a list. (medium) *)
+(* 14. Duplicate the elements of a list. (easy) *)
 (************************************************************************************)
 
-(* let rec delete n l = match n, l with 
-  | _, [] -> []
-  | 1, h::t -> t
-  | _, h::t -> h:: (delete (n-1) t) in
- *)  
+let rec duplicate = function
 
-let rec drop list n  = 
-  let rec aux counter = function 
-    |[] -> []
-    |h::t -> if counter = n then (aux 1 t) else h::(aux (counter+1) t) in
-  aux 1 list
+  | [] -> []
+	| h::t -> [h;h]@(duplicate t)
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-let drop_sol list n =
-    let rec aux i = function
-      | [] -> []
-      | h :: t -> if i = n then aux 1 t else h :: aux (i+1) t  in
-    aux 1 list;;
-(* val drop : 'a list -> int -> 'a list = <fun> *)
+let rec duplicate_sol = function
+		| [] -> []
+		| h :: t -> h :: h :: duplicate t;;
+(* val duplicate : 'a list -> 'a list = <fun> *)
 
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* Redo it by yourself *)
+(* Good job! *)
 
 (*==================================================================================*)
 (* REVISION *)
 (*==================================================================================*)
 
 (* NONE *)
-    
+		
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 
 (************************************************************************************)
-(* 17. Split a list into two parts; the length of the first part is given. (easy) *)
+(* 15. Replicate the elements of a list a given number of times. (medium) *)
 (************************************************************************************)
+let rec copy element = function
+  | 0 -> []
+  | larger -> element :: (copy element (larger-1))
 
-let rec split list n = 
-  let rec aux acc i = function 
-    | [] -> (acc, [])
-    | h::t  -> if i = n then (acc,t) else aux (acc@[h]) (i+1) t
-  in aux [] 0 list
+let rec replicate l n = match l, n with  
+  | [], _ ->  []
+  | _ , 0 -> l
+  | h::t, _ -> (copy h n)@(replicate t n)
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-let split_sol list n =
-    let rec aux i acc = function
-      | [] -> List.rev acc, []
-      | h :: t as l -> if i = 0 then List.rev acc, l
-                       else aux (i-1) (h :: acc) t  in
-    aux n [] list;;
-(* val split : 'a list -> int -> 'a list * 'a list = <fun> *)
+let replicate_sol list n =
+    let rec prepend n acc x =
+      if n = 0 then acc else prepend (n-1) (x :: acc) x in
+    let rec aux acc = function
+      | [] -> acc
+      | h :: t -> aux (prepend n acc h) t  in
+    (* This could also be written as:
+       List.fold_left (prepend n) [] (List.rev list) *)
+    aux [] (List.rev list);;
+(* val replicate : 'a list -> int -> 'a list = <fun> *)
 
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* Good Job! *)
+(* 1. Same idea as solution but soultion is using tail-recurison *)
+(* 2. You should really practice tail recurison *)
 
 (*==================================================================================*)
 (* REVISION *)
 (*==================================================================================*)
 
 (* NONE *)
-

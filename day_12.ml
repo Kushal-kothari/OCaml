@@ -1,127 +1,108 @@
-(* 04/02/2015 *)
+(* 20/02/2020 *)
 
-#use "day_2.ml";;
 (************************************************************************************)
-(* 7. Flatten a nested list structure. (medium) *)
+(* 28. Determine whether a given integer number is prime. (medium) *)
 (************************************************************************************)
 
-(* There is no nested list type in OCaml, so we need to define one first. 
-  A node of a nested list is either an element, or a list of nodes. *)
-type 'a node =
-  | One of 'a 
-  | Many of 'a node list
-(* type 'a node = One of 'a | Many of 'a node list *)
-
-let rec flatten = function
-  | [] -> []
-  | (One x)::tl -> x::(flatten tl)
-  | (Many x)::tl -> (flatten x)@(flatten tl)
+let is_prime n = 
+  let rec aux x =
+    if x < (abs n) then
+       (if (abs n) mod x = 0 then false else aux (x+1))
+    else true
+in aux 2 
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-(* This function traverses the list, prepending any encountered elements
-    to an accumulator, which flattens the list in inverse order. It can
-    then be reversed to obtain the actual flattened list. *)
-  
-let flatten_sol list =
-  let rec aux acc = function
-		| [] -> acc
-		| One x :: t -> aux (x :: acc) t
-		| Many l :: t -> aux (aux acc l) t in
-List.rev (aux [] list)
-
-(* val flatten : 'a node list -> 'a list = <fun> *)
+let is_prime_sol n =
+    let n = abs n in
+    let rec is_not_divisor d =
+      d * d > n || (n mod d <> 0 && is_not_divisor (d+1)) in
+    n <> 1 && is_not_divisor 2;;
+(* val is_prime : int -> bool = <fun> *)
 
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* Again, tail recursion, but I think my solution is simpler *)
+(* Same idea as solution, but you forget about the fact that 1 is NOT a prime 
+number at beginning; also solution give shorter run time*)
 
 (*==================================================================================*)
 (* REVISION *)
 (*==================================================================================*)
 
-let flatten_rev l =
-  let rec help acc = function
-     | [] -> acc
-     | One x :: t -> help (acc @ [x]) t
-     | Many x :: t -> help (help acc x ) t
-  in help [] l
-		
+let is_prime n = 
+  let rec aux x =
+    if x < (abs n) then
+       (if (abs n) mod x = 0 then false else aux (x+1))
+    else true
+in aux 2 && n <> 1
+
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 
 (************************************************************************************)
-(* 8. Eliminate consecutive duplicates of list elements. (medium) *)
+(* 29. Determine the greatest common divisor of two positive integer numbers. (medium)
+ *)
 (************************************************************************************)
 
-let rec compress = function
-  | [] -> [] 
-  | [x]-> [x]
-  | h1::h2::t -> if h1 = h2 then compress (h1::t) else h1::(compress (h2::t))
+let rec gcd x y = 
+  if x mod y = 0 then y 
+else gcd y (x mod y)
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-let rec compress_sol = function
-    | a :: (b :: _ as t) -> if a = b then compress_sol t else a :: compress_sol t
-    | smaller -> smaller
-    (* val compress : 'a list -> 'a list = <fun> *)
+let rec gcd_sol a b =
+    if b = 0 then a else gcd b (a mod b);;
+(* val gcd : int -> int -> int = <fun> *)
 
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* 1. Use keywords such as "as" to make your function more elegant and efficient *)
-(* 2. Again, coding style is VERY IMPORTANT, a good programmer code cleanly and elegantly *)
-(* 3. Question with "smaller" *)
+(* Good, and solution is wrong*)
 
 (*==================================================================================*)
 (* REVISION *)
 (*==================================================================================*)
 
 (* NONE *)
-		
+    
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 (*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
 
 (************************************************************************************)
-(* 9. Pack consecutive duplicates of list elements into sublists. (medium) *)
+(* 30. Determine whether two positive integer numbers are coprime. (easy) *)
 (************************************************************************************)
 
-let rec pack = function
-	| a :: (b :: _ as t ) -> if a <> b then [a]::pack t else [a; b] :: pack t
-	| smaller -> [smaller]
+let coprime x y = 
+  if gcd x y = 1 then true else false
 
 (*==================================================================================*)
 (* SOLUTION *)
 (*==================================================================================*)
 
-let pack_sol list =
-    let rec aux current acc = function
-      | [] -> []    (* Can only be reached if original list is empty *)
-      | [x] -> (x :: current) :: acc
-      | a :: (b :: _ as t) ->
-         if a = b then aux (a :: current) acc t
-         else aux [] ((a :: current) :: acc) t  in
-    List.rev (aux [] [] list)
-(* val pack : 'a list -> 'a list list = <fun> *)
+let coprime_sol a b = gcd a b = 1
 
 (*==================================================================================*)
 (* NOTES *)
 (*==================================================================================*)
 
-(* notes *)
+(* Unecessary true and false keywords *)
 
 (*==================================================================================*)
 (* REVISION *)
 (*==================================================================================*)
 
 (* NONE *)
+    
+(*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
+(*+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-*)
+
 
 
 
